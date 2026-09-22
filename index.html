@@ -1,1 +1,921 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Third Track</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#e4e8f2; --panel:#f7f8fc; --ink:#141a2e; --ink2:#485073; --line:#c2c9df;
+  --accent:#a85f00; --accent-fg:#ffffff; --accent-soft:rgba(168,95,0,.13);
+  --danger:#b3261e; --focus:#1d5fd1;
+  --display:'Big Shoulders Display','Impact','Arial Narrow',sans-serif;
+  --body:'Source Sans 3',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1020; --panel:#151c35; --ink:#eef1fa; --ink2:#a9b2d0; --line:#2a3358;
+    --accent:#ffb547; --accent-fg:#1c1300; --accent-soft:rgba(255,181,71,.14); --danger:#ff8a80; --focus:#8ab8ff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b1020; --panel:#151c35; --ink:#eef1fa; --ink2:#a9b2d0; --line:#2a3358;
+  --accent:#ffb547; --accent-fg:#1c1300; --accent-soft:rgba(255,181,71,.14); --danger:#ff8a80; --focus:#8ab8ff;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:980px;margin:0 auto;padding:18px 16px 28px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(2.2rem,7vw,3.4rem);line-height:.95;margin:0;letter-spacing:.01em}
+.sub{margin:6px 0 0;color:var(--ink2);max-width:46ch}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.pips{display:flex;gap:6px;align-items:center}
+.pips i{width:12px;height:12px;border-radius:50%;border:2px solid var(--line);display:block}
+.pips i.done{background:var(--ink2);border-color:var(--ink2)}
+.pips i.now{border-color:var(--accent);background:var(--accent)}
+.roundtxt{font-size:.95rem;color:var(--ink2);min-width:6.5em;text-align:right}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,canvas:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.ghost{background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.9rem;color:var(--ink2)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px 18px;margin:16px 0 12px;min-height:170px}
+.panel h2{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,4.5vw,2rem);line-height:1.05;margin:0 0 8px}
+.panel p{margin:0 0 10px;max-width:66ch}
+.panel .meta{font-weight:700;color:var(--accent)}
+.panel .hint{color:var(--ink2);font-size:.95rem}
+.primary{background:var(--accent);color:var(--accent-fg);border:0;border-radius:10px;padding:11px 20px;font-weight:700;font-size:1rem;margin-top:4px}
+.primary:hover{filter:brightness(1.06)}
+.timer{margin:0 0 10px}
+.timer-text{font-weight:700;font-size:1rem;margin-bottom:6px}
+.bar{height:9px;border-radius:9px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+.stagewrap{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0c1124}
+canvas{display:block;width:100%;height:auto;aspect-ratio:900/520;touch-action:manipulation}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.controls.two{grid-template-columns:repeat(2,1fr)}
+.tbtn{background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left;min-height:58px;display:flex;flex-direction:column;justify-content:center}
+.tbtn[hidden],.pull[hidden],.brake[hidden]{display:none}
+.tbtn .name{font-weight:700;display:flex;align-items:center;gap:8px}
+.tbtn .lbl{color:var(--ink2);font-size:.92rem;line-height:1.25}
+.tbtn .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.tbtn.on{border-color:var(--accent);background:var(--accent-soft)}
+.tbtn:disabled{cursor:default;opacity:.6}
+.tbtn:disabled.on{opacity:1}
+.pull{grid-column:1/-1;background:var(--accent);color:var(--accent-fg);border:0;border-radius:12px;padding:13px;font-weight:700;font-size:1.05rem}
+.pull:disabled{opacity:.4;cursor:default}
+.brake{grid-column:1/-1;background:var(--danger);color:#fff;border:0;border-radius:12px;padding:14px;font-weight:900;font-size:1.15rem;letter-spacing:.03em;text-transform:uppercase}
+.brake:disabled{opacity:.4;cursor:default}
+.foot{margin-top:14px;color:var(--ink2);font-size:.9rem}
+.sum{list-style:none;margin:10px 0 12px;padding:0;display:grid;gap:6px}
+.sum li{display:grid;grid-template-columns:1.6em 1fr auto;gap:2px 10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.sum .rn{font-family:var(--display);font-weight:700;color:var(--accent)}
+.sum .rt{font-weight:600}
+.sum .rc{color:var(--ink2);text-align:right;font-size:.92rem}
+.sum .rl{grid-column:2/-1;color:var(--ink2);font-size:.9rem}
+.profile{margin-top:10px;padding:12px 14px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0}
+.profile strong{display:block;font-family:var(--display);font-size:1.35rem;font-weight:700}
+@media (max-width:560px){
+  .controls,.controls.two{grid-template-columns:1fr}
+  .tbtn{min-height:52px}
+  .roundtxt{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Third Track</h1>
+      <p class="sub">A trolley problem with something you can't see coming.</p>
+    </div>
+    <div class="hdr-right">
+      <div class="pips" id="pips" aria-hidden="true"></div>
+      <span class="roundtxt" id="roundTxt"></span>
+      <button class="ghost" id="soundBtn" type="button" aria-pressed="true">Sound on</button>
+    </div>
+  </header>
+
+  <section class="panel" id="panel" aria-live="polite"></section>
+
+  <div class="timer" id="timer" hidden>
+    <div class="timer-text" id="timerText"></div>
+    <div class="bar"><i id="timerFill"></i></div>
+  </div>
+
+  <div class="stagewrap">
+    <canvas id="stage" role="img" tabindex="0" aria-label="Rail junction with a lever."></canvas>
+  </div>
+
+  <div class="controls two" id="controls">
+    <button class="tbtn" type="button" data-k="0"><span class="name"><span class="dot"></span><span class="nm"></span></span><span class="lbl"></span></button>
+    <button class="tbtn" type="button" data-k="1"><span class="name"><span class="dot"></span><span class="nm"></span></span><span class="lbl"></span></button>
+    <button class="tbtn" type="button" data-k="2" hidden><span class="name"><span class="dot"></span><span class="nm"></span></span><span class="lbl"></span></button>
+    <button class="pull" id="pullBtn" type="button" hidden>Pull the lever</button>
+    <button class="brake" id="brakeBtn" type="button" hidden>Stop the train</button>
+  </div>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- constants ---------- */
+const W = 900, H = 520;
+const JX = 300, JEND = 430;
+const MAIN_Y = 260;
+const START_X = 60;
+const APPROACH_SPEED = 24;
+const TY = [110, 260, 410];      // y of tracks A, B, C
+const VX0 = [640, 700, 600];     // x of first person on A / the one on B / the player on C
+const HIT_PAD = 8;
+const LEVER = { x: 650, y: 414 };
+const NAMES = ['A', 'B', 'C'];
+const PLAYER = '#7cc7ff';
+const STRANGER = '#d9d0bf';
+const SISTER = '#ffa552';
+const PCOL = ['#f0c9a6', '#e2a6c4', '#a6d3e2', '#c8e2a6', '#e2d7a6', '#d0b3f0'];
+const REVEAL_DELAY = 0.9;
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DISPLAY = '"Big Shoulders Display", Impact, "Arial Narrow", sans-serif';
+
+const ROUNDS = [
+  { key: 'reveal', title: 'Round 1',
+    desc: 'A runaway train is heading for five strangers chained to the straight track. A lever beside you can send it down the other track, where one stranger is chained. You can leave the lever alone, or pull it.',
+    aN: 5, bLabel: '1 stranger', bColor: STRANGER },
+  { key: 'sister', title: 'Round 2',
+    desc: 'The lever now goes exactly where you set it \u2014 three tracks, no trick. Five strangers are chained to track A, one stranger to track B, and track C is where you stand.',
+    aN: 5, bLabel: '1 stranger', bColor: STRANGER, sister: true },
+  { key: 'brake', title: 'Round 3',
+    desc: 'The same three tracks as before. This time there is a fourth option: the emergency brake, in red. It will stop the train before it reaches anyone \u2014 if you can bear what happens after.',
+    aN: 5, bLabel: '1 stranger', bColor: STRANGER, sister: true, brake: true,
+    chant: "YOU KILLED OUR MOTHER! SHE WAS CRITICAL! SHE WAS GOING TO THE HOSPITAL!" }
+];
+
+/* ---------- dom ---------- */
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+const panel = document.getElementById('panel');
+const controls = document.getElementById('controls');
+const timerBox = document.getElementById('timer');
+const timerText = document.getElementById('timerText');
+const timerFill = document.getElementById('timerFill');
+const pullBtn = document.getElementById('pullBtn');
+const brakeBtn = document.getElementById('brakeBtn');
+const soundBtn = document.getElementById('soundBtn');
+const foot = document.getElementById('foot');
+const trackBtns = Array.from(document.querySelectorAll('.tbtn'));
+const pipsEl = document.getElementById('pips');
+const roundTxt = document.getElementById('roundTxt');
+
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+canvas.width = W * dpr; canvas.height = H * dpr;
+ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+function makeLayer() {
+  const c = document.createElement('canvas');
+  c.width = W * dpr; c.height = H * dpr;
+  const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { c, x };
+}
+const base = makeLayer();   // background + main line + tracks A and B
+const third = makeLayer();  // track C, faded in when revealed
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- sound ---------- */
+let ac = null, muted = false;
+function audio() {
+  if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; } }
+  if (ac && ac.state === 'suspended') { try { ac.resume(); } catch (e) {} }
+  return ac;
+}
+function tone(freq, dur, type, vol, slide) {
+  if (muted) return;
+  const a = audio(); if (!a) return;
+  try {
+    const o = a.createOscillator(), g = a.createGain(), now = a.currentTime;
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(freq, now);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, freq + slide), now + dur);
+    g.gain.setValueAtTime(vol || 0.1, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(now); o.stop(now + dur);
+  } catch (e) {}
+}
+const sfx = {
+  clunk() { tone(150, .12, 'square', .09, -90); tone(95, .2, 'sine', .2, -40); },
+  horn() { tone(196, .8, 'sawtooth', .05); tone(247, .8, 'sawtooth', .04); },
+  hit() { tone(75, .6, 'sine', .35, -45); },
+  tick() { tone(880, .05, 'square', .035); },
+  reveal() { tone(110, 1, 'sawtooth', .07, -55); tone(55, 1.3, 'sine', .28, -20); },
+  cry() { tone(520, .35, 'sawtooth', .07, 180); tone(700, .5, 'sine', .05, 260); },
+  brake() { tone(1300, .9, 'sawtooth', .045, -1000); tone(900, .9, 'square', .03, -700); },
+  doors() { tone(300, .15, 'square', .05, -120); tone(220, .2, 'square', .05, -80); },
+  mob() { tone(70, 1.5, 'sawtooth', .1, -25); tone(105, 1.5, 'sawtooth', .06, -35); }
+};
+soundBtn.addEventListener('click', () => {
+  muted = !muted;
+  soundBtn.textContent = muted ? 'Sound off' : 'Sound on';
+  soundBtn.setAttribute('aria-pressed', String(!muted));
+});
+
+/* ---------- geometry ---------- */
+function trackY(x, k) {
+  if (x <= JX) return MAIN_Y;
+  const target = TY[k];
+  if (x >= JEND) return target;
+  const tt = (x - JX) / (JEND - JX), s = tt * tt * (3 - 2 * tt);
+  return MAIN_Y + (target - MAIN_Y) * s;
+}
+function slope(x, k) { return (trackY(x + 1, k) - trackY(x - 1, k)) / 2; }
+function pathTo(c, k, x0, x1) {
+  c.beginPath();
+  for (let x = x0; x <= x1; x += 4) { const y = trackY(x, k); if (x === x0) c.moveTo(x, y); else c.lineTo(x, y); }
+}
+function railLine(c, k, x0, x1, o) {
+  c.beginPath();
+  for (let x = x0; x <= x1; x += 4) {
+    const y = trackY(x, k), s = slope(x, k), n = Math.hypot(1, s);
+    const px = x + (-s / n) * o, py = y + (1 / n) * o;
+    if (x === x0) c.moveTo(px, py); else c.lineTo(px, py);
+  }
+  c.stroke();
+}
+function ties(c, k, x0, x1) {
+  for (let x = x0; x <= x1; x += 14) {
+    const y = trackY(x, k), s = slope(x, k), n = Math.hypot(1, s);
+    const nx = -s / n, ny = 1 / n;
+    c.beginPath(); c.moveTo(x + nx * 11, y + ny * 11); c.lineTo(x - nx * 11, y - ny * 11); c.stroke();
+  }
+}
+function drawBranch(c, k) {
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.strokeStyle = '#1e2645'; c.lineWidth = 40;
+  pathTo(c, k, JX - 4, W + 20); c.stroke();
+  c.strokeStyle = '#3b3557'; c.lineWidth = 3; c.lineCap = 'butt';
+  ties(c, k, JX, W + 20);
+  c.strokeStyle = '#a5adc6'; c.lineWidth = 2.5; c.lineCap = 'round';
+  railLine(c, k, JX, W + 20, 6); railLine(c, k, JX, W + 20, -6);
+}
+function renderStatic() {
+  const c = base.x;
+  third.x.clearRect(0, 0, W, H);
+  const g = c.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0c1124'); g.addColorStop(1, '#151d3a');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  const rg = c.createRadialGradient(JX, MAIN_Y, 10, JX, MAIN_Y, 240);
+  rg.addColorStop(0, 'rgba(255,181,71,.11)'); rg.addColorStop(1, 'rgba(255,181,71,0)');
+  c.fillStyle = rg; c.fillRect(0, 0, W, H);
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.strokeStyle = '#1e2645'; c.lineWidth = 40;
+  pathTo(c, 0, -20, JX); c.stroke();
+  c.strokeStyle = '#3b3557'; c.lineWidth = 3; c.lineCap = 'butt';
+  ties(c, 0, -20, JX);
+  c.strokeStyle = '#a5adc6'; c.lineWidth = 2.5; c.lineCap = 'round';
+  railLine(c, 0, -20, JX, 6); railLine(c, 0, -20, JX, -6);
+  drawBranch(c, 0); drawBranch(c, 1);
+  drawBranch(third.x, 2);
+}
+
+/* ---------- state ---------- */
+let state = 'intro';  // intro, brief, running, braking, exit, mob, impact, result, final
+let roundIdx = 0, lever = 0, leverAnim = 0, touched = false;
+let head = START_X, speed = APPROACH_SPEED, locked = null, results = [];
+let t = 0, flash = 0, shakeAmt = 0, lastSec = -1;
+let revealed = true, revealAlpha = 1, pulled = false, pullT = 0, left = false;
+let braked = false, mobbed = false, mobT = 0, exitT = 0, passengers = [], sparks = [];
+let cried = false, cryT = 0;
+let overlayMsg = '', overlayT = 0, overlayHold = 0;
+
+const isTwoTrack = () => ROUNDS[roundIdx].key === 'reveal';
+function dispRoute() {
+  if (isTwoTrack() && pulled && !revealed) return 1;
+  return locked === null ? lever : locked;
+}
+function targetSpeed() { return head < JX ? APPROACH_SPEED : Math.min(230, 34 + (head - JX) * 0.75); }
+function showOverlay(msg, hold) { overlayMsg = msg; overlayT = 0; overlayHold = hold == null ? 2.6 : hold; }
+
+/* ---------- panel and controls ---------- */
+function setPanel(o) {
+  panel.innerHTML = '';
+  panel.append(el('h2', null, o.title));
+  if (o.text) panel.append(el('p', null, o.text));
+  if (o.meta) panel.append(el('p', 'meta', o.meta));
+  if (o.hint) panel.append(el('p', 'hint', o.hint));
+  if (o.html) { const d = document.createElement('div'); d.innerHTML = o.html; panel.append(d); }
+  if (o.action) {
+    const b = el('button', 'primary', o.action.label);
+    b.type = 'button';
+    b.addEventListener('click', () => { audio(); o.action.fn(); });
+    panel.append(b);
+    try { b.focus({ preventScroll: true }); } catch (e) {}
+  }
+}
+function setHint(msg) { const p = panel.querySelector('.hint'); if (p) p.textContent = msg; }
+
+function buildPips() {
+  pipsEl.innerHTML = '';
+  for (let i = 0; i < ROUNDS.length; i++) {
+    const p = document.createElement('i');
+    if (i < results.length) p.className = 'done';
+    else if (i === roundIdx && state !== 'intro' && state !== 'final') p.className = 'now';
+    pipsEl.append(p);
+  }
+  roundTxt.textContent = (state === 'intro' || state === 'final') ? '' : `Round ${roundIdx + 1} of ${ROUNDS.length}`;
+}
+function setBtn(i, name, lbl, dot) {
+  const b = trackBtns[i];
+  b.querySelector('.nm').textContent = name;
+  b.querySelector('.lbl').textContent = lbl;
+  b.querySelector('.dot').style.background = dot;
+}
+function buildControls() {
+  const R = ROUNDS[roundIdx], two = isTwoTrack();
+  controls.classList.toggle('two', two);
+  trackBtns[2].hidden = two; pullBtn.hidden = two; brakeBtn.hidden = !R.brake;
+  if (two) {
+    setBtn(0, 'Leave the lever', `The train stays on the straight track. 5 strangers lost.`, STRANGER);
+    setBtn(1, 'Pull the lever', `Sends the train to the other track. ${R.bLabel} lost.`, STRANGER);
+    foot.textContent = 'Keyboard: press 1 to leave the lever, 2 to pull it. You can also tap the lever. The switch locks when the train reaches it.';
+    canvas.setAttribute('aria-label', 'Rail junction with a lever. The straight track has five people, the other track has one person.');
+  } else {
+    setBtn(0, 'Track A', `${R.aN} strangers`, STRANGER);
+    setBtn(1, 'Track B', R.bLabel, R.bColor);
+    setBtn(2, 'Track C', 'You', PLAYER);
+    foot.textContent = R.brake
+      ? 'Keyboard: 1, 2 or 3 to pick a track, Space to cycle the lever, 4 or S for the emergency brake.'
+      : 'Keyboard: press 1, 2 or 3 to pick a track, or Space to pull the lever. The switch locks when the train reaches it.';
+    canvas.setAttribute('aria-label', 'Rail junction with a lever. Track A has five people, track B has one, track C is where you stand.');
+  }
+}
+function refreshControls() {
+  const two = isTwoTrack();
+  const running = state === 'running' && locked === null;
+  const active = two ? running && !pulled && !left : running;
+  trackBtns.forEach((b, k) => {
+    b.disabled = !active;
+    const on = two ? (k === 0 ? left : k === 1 ? pulled : false) : lever === k;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
+  pullBtn.disabled = !active;
+  brakeBtn.disabled = !(state === 'running' && !two);
+}
+
+/* ---------- round flow ---------- */
+function startGame() { roundIdx = 0; results = []; showBrief(); }
+
+function showBrief() {
+  const R = ROUNDS[roundIdx];
+  renderStatic();
+  lever = 0; leverAnim = 0; touched = false; head = START_X; speed = APPROACH_SPEED; locked = null;
+  revealed = !isTwoTrack(); revealAlpha = revealed ? 1 : 0; pulled = false; left = false;
+  braked = false; mobbed = false; mobT = 0; exitT = 0; passengers = []; sparks = [];
+  cried = false; cryT = 0; overlayMsg = ''; overlayT = 0;
+  state = 'brief'; lastSec = -1;
+  timerBox.hidden = true;
+  buildControls(); buildPips(); refreshControls();
+  setPanel({ title: R.title, text: R.desc, action: { label: 'Send the train', fn: startRun } });
+}
+
+function startRun() {
+  const R = ROUNDS[roundIdx];
+  state = 'running';
+  sfx.horn();
+  timerBox.hidden = false;
+  refreshControls();
+  setPanel({ title: R.title, text: R.desc,
+    hint: isTwoTrack() ? 'Leave the lever alone or pull it. The train reaches the switch in about ten seconds.'
+                        : R.brake ? 'Set the lever, or hit the emergency brake before the train reaches anyone.'
+                                  : 'The lever starts on track A. Move it before the train reaches the switch.' });
+}
+
+function setLever(k) {
+  if (!(state === 'running' && locked === null)) return;
+  if (k === lever) return;
+  lever = k; touched = true;
+  sfx.clunk(); refreshControls();
+}
+function cycleLever() { if (!isTwoTrack()) setLever((lever + 1) % 3); }
+function leaveLever() {
+  if (!(state === 'running' && locked === null) || pulled || left) return;
+  left = true; refreshControls();
+  setHint('You left the lever alone.');
+}
+function pullHidden() {
+  if (!(state === 'running' && locked === null) || pulled || left) return;
+  pulled = true; pullT = t; lever = 2; touched = true;
+  sfx.clunk(); refreshControls();
+  setHint('You pulled the lever.');
+}
+function choose(k) { if (isTwoTrack()) { if (k === 0) leaveLever(); else if (k === 1) pullHidden(); } else setLever(k); }
+function doReveal() { revealed = true; sfx.reveal(); if (!RM) shakeAmt = Math.max(shakeAmt, 8); }
+
+function brake() {
+  const R = ROUNDS[roundIdx];
+  if (!R.brake || state !== 'running') return;
+  braked = true; state = 'braking';
+  timerBox.hidden = true;
+  sfx.brake(); refreshControls();
+  setHint('You pulled the emergency brake.');
+}
+function spawnPassengers() {
+  const k = locked === null ? lever : locked;
+  const cars = [124, 200];
+  passengers = []; let n = 0;
+  cars.forEach(off => {
+    for (let i = 0; i < 4; i++) {
+      const cx = head - off + (i - 1.5) * 14;
+      passengers.push({ x: cx, y: trackY(cx, k) + 16, delay: n * 0.16, age: 0, col: PCOL[n % PCOL.length], arrived: false, speed: 95 + Math.random() * 35, tx: 0, ty: 0 });
+      n++;
+    }
+  });
+  passengers.forEach((p, i) => {
+    const a = (i / passengers.length) * Math.PI * 2;
+    p.tx = VX0[2] + Math.cos(a) * 30; p.ty = TY[2] + 6 + Math.sin(a) * 12;
+  });
+  mobbed = true; exitT = 0;
+  sfx.doors();
+  setHint('The train has stopped. The doors are opening.');
+}
+
+function endRound(forceTrack) {
+  state = 'result';
+  const R = ROUNDS[roundIdx];
+  const track = forceTrack != null ? forceTrack : locked;
+  const lost = [R.aN, 1, 1, 1][track];
+  const label = [`${R.aN} strangers`, R.sister ? 'Your sister' : R.bLabel, 'You', 'You'][track];
+  results.push({ track, touched, lost, label, braked });
+  timerBox.hidden = true;
+  let text, meta = `Lost: ${label}`;
+
+  if (isTwoTrack()) {
+    if (track === 0) {
+      text = 'You left the lever alone. The train kept to the straight track.';
+    } else {
+      text = 'You pulled the lever, expecting the train to take the other stranger. It never reached them. The ground opened beneath your own feet, and the train came for you instead.';
+    }
+  } else if (track === 3) {
+    text = `You hit the emergency brake and the train stopped short of everyone on the tracks. Then the doors opened. ${R.chant ? 'The passengers poured out, screaming: \u201c' + R.chant + '\u201d ' : ''}The crowd closed in, and the rest is not shown.`;
+    meta = 'Lost: You. Everyone on the tracks lived.';
+  } else if (track === 1 && R.sister) {
+    text = 'You set the lever to the branch track. As the train closed the distance, she screamed that she was your sister, that you were killing her with your own hand. The train did not slow down.';
+  } else if (track === 0) {
+    text = 'You left the lever on the straight track.';
+  } else {
+    text = 'You set the lever to your own track and stayed where you stood.';
+  }
+  const last = roundIdx === ROUNDS.length - 1;
+  buildPips(); refreshControls();
+  setPanel({ title: 'Outcome', text, meta, action: { label: last ? 'See where you landed' : 'Next round', fn: last ? showFinal : nextRound } });
+}
+function nextRound() { roundIdx++; showBrief(); }
+
+function choiceName(r, i) {
+  const R = ROUNDS[i];
+  if (R.key === 'reveal') return r.track === 0 ? 'Left the lever' : 'Pulled the lever';
+  if (r.track === 3) return 'Emergency brake';
+  if (r.track === 0) return 'Track A';
+  if (r.track === 1) return R.sister ? 'Track B, your sister' : 'Track B';
+  return 'Track C, yourself';
+}
+
+function showFinal() {
+  state = 'final';
+  timerBox.hidden = true;
+  let total = 0, self = 0;
+  results.forEach(r => { total += r.lost; if (r.track >= 2) self++; });
+  const r1 = results[0], r2 = results[1], r3 = results[2];
+  const l1 = r1.track === 0
+    ? 'In round one, you left the lever alone and five strangers were lost on the straight track.'
+    : 'In round one, you pulled the lever meaning to save five lives at the cost of one \u2014 and the track turned on you instead. Aren\u2019t all lives equal? Isn\u2019t five greater than one? The game asked you that question with your own life.';
+  const l2 = r2.track === 1
+    ? 'In round two, with nothing hidden anymore, you chose to kill your sister to save five strangers.'
+    : r2.track === 0 ? 'In round two, you let the five strangers die rather than move the lever at all.'
+    : 'In round two, you put yourself on the track rather than choose between your sister and the five.';
+  const l3 = r3.track === 3
+    ? 'In round three, you stopped the train and spared everyone chained to the rails \u2014 but a critical patient on board never reached the hospital, and the crowd made you answer for it.'
+    : r3.track === 1 ? 'In round three, you sent the train to your sister a second time.'
+    : r3.track === 0 ? 'In round three, you let the five die again.'
+    : 'In round three, you chose yourself again.';
+  const rows = results.map((r, i) =>
+    `<li><span class="rn">${i + 1}</span><span class="rt">${ROUNDS[i].title}</span><span class="rc">${choiceName(r, i)}</span><span class="rl">Lost: ${r.label}</span></li>`).join('');
+  const html = `<ul class="sum">${rows}</ul>
+    <p>Lives lost across three rounds: <strong>${total}</strong>. Times it cost you your own life: <strong>${self}</strong>.</p>
+    <div class="profile"><strong>Where you landed</strong>${l1} ${l2} ${l3} None of the three levers ever gave you a clean answer. That was the point.</div>`;
+  buildPips(); refreshControls();
+  setPanel({ title: 'Where you landed', html, action: { label: 'Play again', fn: startGame } });
+}
+
+/* ---------- update ---------- */
+function update(dt) {
+  t += dt;
+  leverAnim += (lever - leverAnim) * Math.min(1, dt * 14);
+  if (revealed) revealAlpha = Math.min(1, revealAlpha + dt * 1.4);
+
+  if (isTwoTrack() && pulled && !revealed && t - pullT >= REVEAL_DELAY) {
+    doReveal();
+    showOverlay('AREN\u2019T ALL LIVES EQUAL? ISN\u2019T FIVE GREATER THAN ONE?', 3.2);
+    setHint('A third track has appeared under your feet. The lever is locked.');
+  }
+
+  const R = ROUNDS[roundIdx];
+  if (R.sister && !isTwoTrack() && !cried && (locked === 1 || (locked === null && lever === 1))) {
+    const target = locked === null ? lever : locked;
+    if (target === 1) {
+      const prox = clamp((head - 100) / (VX0[1] - 100), 0, 1);
+      if (prox > 0.55) { cried = true; cryT = 0; sfx.cry(); setHint('She is screaming something at you.'); }
+    }
+  }
+  if (cried) cryT += dt;
+
+  if (state === 'running' || state === 'impact' || state === 'braking') {
+    if (state === 'braking') speed = Math.max(0, speed - (60 + speed * 3) * dt);
+    else if (state === 'impact' && braked) speed = Math.min(230, Math.max(speed, 90) + 300 * dt);
+    else speed = targetSpeed();
+    head += speed * dt;
+
+    if (locked === null && head >= JX) {
+      locked = lever;
+      sfx.clunk(); refreshControls();
+      timerText.textContent = `Switch locked on track ${NAMES[locked]}`;
+      timerFill.style.width = '100%';
+    }
+    if ((state === 'running' || state === 'braking') && locked !== null && head >= VX0[locked] - HIT_PAD) {
+      state = 'impact'; flash = RM ? 0.25 : 1; shakeAmt = RM ? 0 : 14; sfx.hit();
+    }
+    if (state === 'impact' && head > W + 250) endRound();
+
+    if (state === 'braking') {
+      if (speed > 15) {
+        const k = locked === null ? lever : locked;
+        const cy = trackY(head - 20, k);
+        for (let i = 0; i < 3; i++) sparks.push({ x: head - 14 + Math.random() * 10, y: cy + 13, vx: -(40 + Math.random() * 140), vy: -(30 + Math.random() * 90), life: 0.35 + Math.random() * 0.25 });
+      }
+      if (speed <= 0.5) { state = 'exit'; spawnPassengers(); }
+    }
+
+    if (state === 'running' && locked === null) {
+      const rem = Math.max(0, (JX - head) / APPROACH_SPEED);
+      timerText.textContent = `Train reaches the switch in ${rem.toFixed(1)} s`;
+      timerFill.style.width = (clamp((head - START_X) / (JX - START_X), 0, 1) * 100).toFixed(1) + '%';
+      const sec = Math.ceil(rem);
+      if (sec !== lastSec) { if (sec <= 3 && sec > 0) sfx.tick(); lastSec = sec; }
+    }
+  }
+
+  if (state === 'exit') {
+    exitT += dt;
+    let all = true;
+    passengers.forEach(p => {
+      p.age += dt;
+      if (p.age < p.delay) { all = false; return; }
+      if (p.arrived) return;
+      const dx = p.tx - p.x, dy = p.ty - p.y, d = Math.hypot(dx, dy);
+      if (d < 3) { p.arrived = true; return; }
+      const step = Math.min(d, p.speed * dt);
+      p.x += dx / d * step; p.y += dy / d * step;
+      all = false;
+    });
+    if (all || exitT > 7) {
+      state = 'mob'; mobT = 0; sfx.mob();
+      if (R.chant) showOverlay(R.chant, 2.4);
+      setHint('The crowd reaches you.');
+    }
+  }
+  if (state === 'mob') { mobT += dt; if (mobT > 2) endRound(3); }
+
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const p = sparks[i];
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 400 * dt; p.life -= dt;
+    if (p.life <= 0) sparks.splice(i, 1);
+  }
+  if (overlayMsg) { overlayT += dt; if (overlayT > overlayHold) overlayMsg = ''; }
+  flash = Math.max(0, flash - dt * 2.2);
+  shakeAmt = Math.max(0, shakeAmt - dt * 22);
+}
+
+/* ---------- drawing ---------- */
+function line(x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+
+function person(x, y, o) {
+  ctx.save();
+  ctx.globalAlpha = o.alpha == null ? 1 : o.alpha;
+  ctx.translate(x + (o.shake || 0), y + 20);
+  ctx.rotate((o.fall || 0) * 1.5);
+  ctx.translate(0, -20);
+  ctx.strokeStyle = o.color; ctx.fillStyle = o.color;
+  ctx.lineWidth = 3; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(0, -17, 6, 0, Math.PI * 2); ctx.fill();
+  line(0, -10, 0, 6);
+  line(0, 6, -5, 20); line(0, 6, 5, 20);
+  if (o.reach) line(0, -6, o.reach.x - x, o.reach.y - y);
+  else if (o.arms === 'up') { line(0, -6, -9, -16); line(0, -6, 9, -16); }
+  else { line(0, -6, -8, 2); line(0, -6, 8, 2); }
+  if (o.chained) {
+    ctx.strokeStyle = '#8891ac'; ctx.lineWidth = 1.6; ctx.setLineDash([3, 2]);
+    line(-9, -8, 9, 5); line(9, -8, -9, 5);
+    ctx.setLineDash([]);
+  }
+  ctx.restore();
+}
+function bang(x, y) {
+  ctx.save(); ctx.fillStyle = '#ffb547'; ctx.font = `800 18px ${DISPLAY}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', x, y); ctx.restore();
+}
+function wrapLines(str, maxChars) {
+  const words = str.split(' '); const lines = []; let cur = '';
+  words.forEach(w => {
+    const next = cur ? cur + ' ' + w : w;
+    if (next.length > maxChars && cur) { lines.push(cur); cur = w; } else cur = next;
+  });
+  if (cur) lines.push(cur);
+  return lines;
+}
+function speechBubble(x, y, text, alpha) {
+  const lines = wrapLines(text, 20);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.font = `700 15px ${DISPLAY}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const lh = 18, padX = 12, padY = 10;
+  let maxW = 0;
+  lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l).width); });
+  const bw = maxW + padX * 2, bh = lines.length * lh + padY * 2;
+  const bx = x, by = y - bh - 16;
+  ctx.fillStyle = '#e0473c'; ctx.strokeStyle = '#2a0805'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  const r = 8, left = bx - bw / 2, top = by;
+  ctx.roundRect ? ctx.roundRect(left, top, bw, bh, r) : ctx.rect(left, top, bw, bh);
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(bx - 8, top + bh); ctx.lineTo(bx, top + bh + 12); ctx.lineTo(bx + 10, top + bh);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#fff';
+  lines.forEach((l, i) => ctx.fillText(l, bx, by + padY + lh / 2 + i * lh));
+  ctx.restore();
+}
+function label(text, x, y, color) {
+  ctx.save();
+  ctx.font = `700 22px ${DISPLAY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(8,12,26,.75)'; ctx.fillText(text, x + 1, y + 1);
+  ctx.fillStyle = color || '#e8ebf6'; ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function drawRoute() {
+  const k = dispRoute();
+  ctx.save();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = 'rgba(255,181,71,.2)'; ctx.lineWidth = 30;
+  pathTo(ctx, 0, -20, JX); ctx.stroke();
+  ctx.globalAlpha = k === 2 ? revealAlpha : 1;
+  pathTo(ctx, k, JX - 2, W + 20); ctx.stroke();
+  ctx.restore();
+
+  for (let i = 0; i < 3; i++) {
+    if (i === 2 && revealAlpha <= 0.01) continue;
+    const lx = JEND + 50, ly = TY[i] - 26, on = i === k;
+    ctx.save();
+    ctx.globalAlpha = i === 2 ? revealAlpha : 1;
+    ctx.strokeStyle = '#59628a'; ctx.lineWidth = 2; line(lx, TY[i] - 10, lx, ly);
+    if (on) { ctx.shadowColor = '#59e08f'; ctx.shadowBlur = 14; }
+    ctx.fillStyle = on ? '#59e08f' : '#4a3c48';
+    ctx.beginPath(); ctx.arc(lx, ly, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = on ? '#e8ebf6' : '#8a93b0'; ctx.font = `700 16px ${DISPLAY}`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(NAMES[i], lx + 12, ly);
+    ctx.restore();
+  }
+
+  ctx.save();
+  ctx.strokeStyle = '#66719a'; ctx.lineWidth = 2; ctx.setLineDash([7, 5]); ctx.lineDashOffset = -leverAnim * 40;
+  ctx.beginPath(); ctx.moveTo(JX, 306); ctx.lineTo(JX, 490); ctx.lineTo(LEVER.x, 490); ctx.lineTo(LEVER.x, LEVER.y + 16); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#232b4a'; ctx.strokeStyle = '#7a86ad'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(JX - 14, 284, 28, 24, 5) : ctx.rect(JX - 14, 284, 28, 24);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ffb547'; ctx.font = `800 20px ${DISPLAY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(NAMES[k], JX, 297);
+  ctx.restore();
+}
+
+function drawVictims() {
+  const R = ROUNDS[roundIdx];
+  const active = dispRoute();
+  const live = state === 'running' || state === 'impact';
+
+  for (let i = 0; i < R.aN; i++) {
+    const x = VX0[0] + i * 24, y = TY[0];
+    const fall = locked === 0 ? clamp((head - (x - HIT_PAD)) / 40, 0, 1) : 0;
+    const threat = live && active === 0 && fall === 0;
+    const prox = clamp((head - 100) / (VX0[0] - 100), 0, 1);
+    const sh = threat && !RM ? Math.sin(t * 46 + i * 1.9) * prox * 2.4 : 0;
+    person(x, y, { color: STRANGER, fall, shake: sh, chained: true, alpha: 1 - 0.45 * fall });
+    if (threat && prox > 0.35) bang(x, y - 34);
+  }
+  label(`${R.aN} strangers`, VX0[0] + (R.aN - 1) * 12, TY[0] - 58, STRANGER);
+
+  if (!isTwoTrack() || true) {
+    const bx = VX0[1], by = TY[1];
+    const fall = locked === 1 ? clamp((head - (bx - HIT_PAD)) / 40, 0, 1) : 0;
+    const threat = live && active === 1 && fall === 0;
+    const prox = clamp((head - 100) / (bx - 100), 0, 1);
+    const sh = threat && !RM ? Math.sin(t * 46) * prox * 2.4 : 0;
+    const col = R.sister ? SISTER : STRANGER;
+    person(bx, by, { color: col, fall, shake: sh, chained: true, alpha: 1 - 0.45 * fall });
+    if (threat && prox > 0.35) bang(bx, by - 34);
+    label(R.sister ? '1 stranger' : R.bLabel, bx, by - 58, col);
+    if (R.sister && cried && !revealed === false && cryT < 1.1) {
+      const a = clamp(cryT / 0.25, 0, 1) * clamp((1.1 - cryT) / 0.3, 0, 1);
+      if (a > 0.01) speechBubble(bx, by - 30, "I AM YOUR REAL BLOOD SISTER! YOU KILLED ME WITH YOUR OWN HAND!", a);
+    }
+  }
+
+  const px = VX0[2], py = TY[2];
+  const a = (leverAnim - 1) * 0.62;
+  const hx = LEVER.x + Math.sin(a) * 30, hy = LEVER.y - Math.cos(a) * 30;
+  const trainFall = locked === 2 ? clamp((head - (px - HIT_PAD)) / 40, 0, 1) : 0;
+  const mobFall = mobbed && (state === 'mob' || state === 'result') ? (state === 'result' ? 1 : clamp(mobT / 0.5, 0, 1)) : 0;
+  const fall = Math.max(trainFall, mobFall);
+  const threat = live && active === 2 && fall === 0;
+  const prox = clamp((head - 100) / (px - 100), 0, 1);
+  const sh = threat && !RM ? Math.sin(t * 46) * prox * 2.4 : 0;
+  person(px, py, { color: PLAYER, fall, shake: sh, reach: fall === 0 ? { x: hx, y: hy } : null, alpha: 1 - 0.65 * fall });
+  if (threat && prox > 0.35) bang(px, py - 34);
+  if (revealAlpha > 0.05) label('You', px, py - 64, PLAYER);
+}
+
+function drawLever() {
+  const c = ctx, a = (leverAnim - 1) * 0.62;
+  const slots = isTwoTrack() ? [0, 2] : [0, 1, 2];
+  c.save();
+  c.translate(LEVER.x, LEVER.y);
+  c.fillStyle = '#2c3558'; c.strokeStyle = '#8a94b3'; c.lineWidth = 1.5;
+  c.beginPath(); c.roundRect ? c.roundRect(-20, -2, 40, 16, 4) : c.rect(-20, -2, 40, 16); c.fill(); c.stroke();
+  slots.forEach(k => {
+    const na = (k - 1) * 0.62;
+    const on = Math.abs(leverAnim - k) < 0.5;
+    const letter = k === 2 ? (isTwoTrack() && !revealed ? 'B' : 'C') : NAMES[k];
+    c.strokeStyle = on ? '#ffb547' : '#66719a'; c.lineWidth = 2;
+    line(Math.sin(na) * 50, -Math.cos(na) * 50, Math.sin(na) * 56, -Math.cos(na) * 56);
+    c.fillStyle = on ? '#ffb547' : '#8a93b0'; c.font = `700 15px ${DISPLAY}`;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(letter, Math.sin(na) * 66, -Math.cos(na) * 66);
+  });
+  c.strokeStyle = '#d6dbea'; c.lineWidth = 6; c.lineCap = 'round';
+  line(0, 0, Math.sin(a) * 50, -Math.cos(a) * 50);
+  c.fillStyle = '#ffb547'; c.beginPath(); c.arc(Math.sin(a) * 50, -Math.cos(a) * 50, 8, 0, Math.PI * 2); c.fill();
+  c.restore();
+}
+
+function drawTrain() {
+  const k = dispRoute();
+  const cars = [{ off: 42, len: 84, loco: true }, { off: 124, len: 70 }, { off: 200, len: 70 }];
+  for (let i = cars.length - 1; i >= 0; i--) {
+    const car = cars[i];
+    const cx = head - car.off;
+    if (cx < -80 || cx > W + 80) continue;
+    const cy = trackY(cx, k), ang = Math.atan(slope(cx, k));
+    ctx.save();
+    ctx.translate(cx, cy); ctx.rotate(ang);
+    const h = car.len / 2;
+    if (car.loco) {
+      const g = ctx.createLinearGradient(h, 0, h + 140, 0);
+      g.addColorStop(0, 'rgba(255,224,150,.42)'); g.addColorStop(1, 'rgba(255,224,150,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.moveTo(h, -4); ctx.lineTo(h + 140, -34); ctx.lineTo(h + 140, 34); ctx.lineTo(h, 4); ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = car.loco ? '#e8e2d0' : '#56617f';
+    ctx.strokeStyle = '#0a0f20'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-h, -14, car.len, 28, 6) : ctx.rect(-h, -14, car.len, 28);
+    ctx.fill(); ctx.stroke();
+    if (car.loco) {
+      ctx.fillStyle = '#ffb547'; ctx.fillRect(-h + 2, 3, car.len - 4, 5);
+      ctx.fillStyle = '#1b2340'; ctx.fillRect(-h + 8, -9, 22, 10);
+      ctx.fillStyle = '#fff3c4'; ctx.beginPath(); ctx.arc(h - 4, 0, 4, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = '#9fb0d8';
+      for (let w = -h + 10; w < h - 12; w += 16) ctx.fillRect(w, -8, 10, 7);
+    }
+    ctx.restore();
+  }
+}
+function drawPassengers() {
+  passengers.forEach((p, i) => {
+    if (p.age < p.delay) return;
+    const sh = state === 'mob' && !RM ? Math.sin(t * 52 + i * 2.3) * 2.6 : 0;
+    person(p.x, p.y, { color: p.col, arms: 'up', shake: sh });
+    if (!p.arrived && state === 'exit') bang(p.x, p.y - 34);
+  });
+}
+function drawSparks() {
+  ctx.save();
+  sparks.forEach(p => {
+    ctx.globalAlpha = clamp(p.life * 2.5, 0, 1);
+    ctx.fillStyle = '#ffd27a';
+    ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2); ctx.fill();
+  });
+  ctx.restore();
+}
+function drawOverlay() {
+  if (!overlayMsg) return;
+  const a = clamp(overlayT / 0.3, 0, 1) * clamp((overlayHold - overlayT) / 0.5, 0, 1);
+  if (a <= 0.01) return;
+  const lines = wrapLines(overlayMsg, 34);
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.fillStyle = 'rgba(6,4,10,.62)';
+  const lh = 30, bh = lines.length * lh + 24, by = 30;
+  ctx.fillRect(0, by, W, bh);
+  ctx.font = `800 24px ${DISPLAY}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffb547';
+  lines.forEach((l, i) => ctx.fillText(l, W / 2, by + 12 + lh / 2 + i * lh));
+  ctx.restore();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0c1124'; ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  if (shakeAmt > 0) ctx.translate((Math.random() - .5) * shakeAmt, (Math.random() - .5) * shakeAmt);
+  ctx.drawImage(base.c, 0, 0, W, H);
+  if (revealAlpha > 0) { ctx.globalAlpha = revealAlpha; ctx.drawImage(third.c, 0, 0, W, H); ctx.globalAlpha = 1; }
+  drawRoute();
+  drawVictims();
+  drawLever();
+  drawTrain();
+  drawSparks();
+  drawPassengers();
+  ctx.restore();
+  if (state === 'mob') { ctx.fillStyle = `rgba(30,0,0,${(clamp(mobT / 1.2, 0, 1) * 0.4).toFixed(3)})`; ctx.fillRect(0, 0, W, H); }
+  drawOverlay();
+  if (flash > 0) { ctx.fillStyle = `rgba(255,255,255,${(flash * 0.5).toFixed(3)})`; ctx.fillRect(0, 0, W, H); }
+}
+
+/* ---------- input ---------- */
+trackBtns.forEach(b => b.addEventListener('click', () => { audio(); choose(Number(b.dataset.k)); }));
+pullBtn.addEventListener('click', () => { audio(); cycleLever(); });
+brakeBtn.addEventListener('click', () => { audio(); brake(); });
+
+canvas.addEventListener('pointerdown', e => {
+  const r = canvas.getBoundingClientRect();
+  const lx = (e.clientX - r.left) * W / r.width, ly = (e.clientY - r.top) * H / r.height;
+  audio();
+  if (Math.hypot(lx - LEVER.x, ly - (LEVER.y - 30)) < 75) {
+    if (isTwoTrack()) pullHidden(); else cycleLever();
+    return;
+  }
+  if (!isTwoTrack() && lx > JEND - 20) {
+    let best = -1, bd = 60;
+    for (let k = 0; k < 3; k++) { const d = Math.abs(ly - TY[k]); if (d < bd) { bd = d; best = k; } }
+    if (best >= 0) setLever(best);
+  }
+});
+
+window.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (isTwoTrack()) { if (k === '1') choose(0); else if (k === '2') choose(1); return; }
+  if (k === '4' || k === 's') { brake(); return; }
+  const map = { '1': 0, '2': 1, '3': 2, a: 0, b: 1, c: 2 };
+  if (k in map) { setLever(map[k]); return; }
+  if (k === 'arrowright' || k === 'arrowup') { e.preventDefault(); setLever(Math.min(2, lever + 1)); return; }
+  if (k === 'arrowleft' || k === 'arrowdown') { e.preventDefault(); setLever(Math.max(0, lever - 1)); return; }
+  if ((k === ' ' || k === 'enter') && !(e.target instanceof HTMLButtonElement)) {
+    if (state === 'running' && locked === null) { e.preventDefault(); cycleLever(); }
+  }
+});
+
+/* ---------- boot ---------- */
+renderStatic();
+buildControls(); buildPips(); refreshControls();
+setPanel({
+  title: 'Third Track',
+  text: 'Three rounds. In round one, a runaway train is heading for five strangers on the straight track. A lever beside you can send it to one stranger on the other track \u2014 or so it seems. Leave the lever alone, or pull it.',
+  action: { label: 'Begin', fn: startGame }
+});
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  update(dt); draw();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
 
