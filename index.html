@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Third Track</title>
+<title>Which Track</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -92,7 +92,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:900/520;touch-action:ma
 <div class="wrap">
   <header>
     <div>
-      <h1>Third Track</h1>
+      <h1>Which Track</h1>
       <p class="sub">A trolley problem with something you can't see coming.</p>
     </div>
     <div class="hdr-right">
@@ -512,7 +512,7 @@ function showFinal() {
     `<li><span class="rn">${i + 1}</span><span class="rt">${ROUNDS[i].title}</span><span class="rc">${choiceName(r, i)}</span><span class="rl">Lost: ${r.label}</span></li>`).join('');
   const html = `<ul class="sum">${rows}</ul>
     <p>Lives lost across three rounds: <strong>${total}</strong>. Times it cost you your own life: <strong>${self}</strong>.</p>
-    <div class="profile"><strong>Where you landed</strong>${l1} ${l2} ${l3} None of the three levers ever gave you a clean answer. That was the point.</div>`;
+    <div class="profile"><strong>Where you landed</strong>${l1} ${l2} ${l3}</div>`;
   buildPips(); refreshControls();
   setPanel({ title: 'Where you landed', html, action: { label: 'Play again', fn: startGame } });
 }
